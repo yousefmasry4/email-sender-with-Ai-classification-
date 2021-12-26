@@ -3,6 +3,13 @@
    <application
         android:label="email_tutorial"
         android:icon="@mipmap/ic_launcher">
+       <queries>
+           <intent>
+               <action android:name="android.intent.action.SENDTO" />
+               <data android:scheme="mailto" />
+           </intent>
+       </queries>
+       <uses-permission android:name="android.permission.INTERNET" />
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

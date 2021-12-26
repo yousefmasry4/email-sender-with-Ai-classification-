@@ -6,15 +6,23 @@ class TextFields extends StatelessWidget {
   final String? Function(String?)? validator;
   final int? maxLines;
   final TextInputType? type;
+  final Function? f;
 
-  TextFields({required this.controller, required this.name, required this.validator,this.maxLines,this.type});
+  TextFields({required this.controller, required this.name, required this.validator,this.maxLines,this.type, this.f});
   @override
   Widget build(BuildContext context) {
     OutlineInputBorder border = OutlineInputBorder(borderRadius: BorderRadius.circular(40.0),borderSide: BorderSide.none);
     return  Padding(
         padding: EdgeInsets.all(20.0),
         child: TextFormField(
+
           autovalidateMode: AutovalidateMode.onUserInteraction,
+           onChanged: (s){
+
+             if(f != null){
+              f!(controller.text);
+            }
+           },
            keyboardType: type,
           maxLines: maxLines,
           controller: controller,

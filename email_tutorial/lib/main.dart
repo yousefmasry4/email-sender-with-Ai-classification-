@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:email_tutorial/components/text_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:http/http.dart' as http;
+
 
 void main() {
   runApp(MyApp());
@@ -11,11 +15,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Email Tutorial',
+      title: 'The best bigdata project',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: FeedBackPage(title: 'Feedback'),
+      home: FeedBackPage(title: 'The best bigdata project'),
     );
   }
 }
@@ -32,9 +36,13 @@ class FeedBackPage extends StatefulWidget {
 class _FeedBackPageState extends State<FeedBackPage> {
   final _formKey = GlobalKey<FormState>();
   bool _enableBtn = false;
+  int api =-1;
+
   TextEditingController emailController = TextEditingController();
   TextEditingController subjectController = TextEditingController();
   TextEditingController messageController = TextEditingController();
+  TextEditingController apiController = TextEditingController();
+
 
   @override
   void dispose() {
@@ -42,11 +50,13 @@ class _FeedBackPageState extends State<FeedBackPage> {
     emailController.dispose();
     subjectController.dispose();
     messageController.dispose();
+    apiController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(widget.title!),
       ),
@@ -61,6 +71,18 @@ class _FeedBackPageState extends State<FeedBackPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+              TextFields(
+                  controller: apiController,
+                  name: "api url",
+                  validator: ((value) {
+                    if (value!.isEmpty) {
+                      return 'you need to set api';
+                      return null;
+                    }
+                    return null;
+                  }
+                    )
+                    ),
               TextFields(
                   controller: subjectController,
                   name: "Subject",
@@ -83,16 +105,54 @@ class _FeedBackPageState extends State<FeedBackPage> {
                   })),
               TextFields(
                   controller: messageController,
+                  f: (s) async {
+                    if(apiController.text.isNotEmpty){
+                        print("callllll");
+                        http.Response res=await http.post(
+                        Uri.parse('${apiController.text}/api/str'),
+                        headers: <String, String>{
+                        'Content-Type': 'application/json; charset=UTF-8',
+                        },
+                        body: jsonEncode(<String, String>{
+                        'txt': s,
+                        }),
+                        );
+                        if(res.statusCode == 200)
+                        if(jsonDecode(res.body)["classification"] == "1"){
+                          setState(() {
+                            api=1;
+                          });
+                        }else{
+                          setState(() {
+                            api=0;
+                          });
+                        }
+                    }
+
+                  },
                   name: "Message",
                   validator: ((value) {
-                    if (value!.isEmpty) {
-                      setState(() {
-                        _enableBtn = true;
-                      });
-                      return 'Message is required';
+                    WidgetsBinding.instance!.addPostFrameCallback((_){
+                      if (value!.isNotEmpty) {
+
+                        setState(() {
+                          _enableBtn = true;
+                          // api=-1;
+                        });
+
+                        // return 'Message is required';
+                      }else{
+                        setState(() {
+                          api=-1;
+                        });
+                      }
+                      return null;
+
+                      // Add Your Code here.
+
                     }
-                    return null;
-                  }),
+                    );
+                    }),
                   maxLines: null,
                   type: TextInputType.multiline),
               Padding(
@@ -135,6 +195,10 @@ class _FeedBackPageState extends State<FeedBackPage> {
           ),
         ),
       ),
+      bottomNavigationBar: api!=-1?Container(
+        height: 50,
+        color: api == 1?Colors.green:Colors.redAccent,
+      ):SizedBox()
     );
   }
 }
